@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 
+
 class TollCalculator:
     def __init__(self, input_file: str):
         content = None
@@ -27,19 +28,26 @@ class TollCalculator:
     def get_total_toll_fee(dates_list: List[datetime]) -> int:
         """Calculate total cost for a given list of passing datetimes"""
         
-        interval_start = dates_list[1]
-        a = 50
+        # bugg ändrat till 0
+        interval_start = dates_list[0]
+
+        # Bugg 6 a ändrat till 0 istället för 50
+        a = 0
         
         for date in dates_list:
             print(date)
             diff = (date - interval_start)
             
             if diff.seconds > 60:
-                a -= TollCalculator.get_toll_fee_per_passing(date)
+                #Bugg 7 ändrat till + istället för -
+                a += TollCalculator.get_toll_fee_per_passing(date)
                 interval_start = date
+                print("did stuff")
             else:
+                # Körs om det är helg 
                 a += max(TollCalculator.get_toll_fee_per_passing(date),
                          TollCalculator.get_toll_fee_per_passing(interval_start))
+                print("did else")
         return a
         
     @staticmethod
@@ -51,39 +59,72 @@ class TollCalculator:
         
         hour = date.hour
         minute = date.minute
-        
+
+        # 06:00–06:29    8 kr
         if hour == 6 and minute >= 0 and minute <= 30:
             return 8
-        elif hour == 6 and minute >= 31 and minute <= 59:
-            return 15
+
+        # 06:30–06:59   13 kr
+        elif hour == 6 and minute >= 30 and minute <= 59:
+            # Bugg 1. minute ändrad till 30 istället för 31, 
+            # Bugg 2. Return Ändrad från 15
+            return 13
+
+        # 07:00–07:59 18 kr
         elif hour == 7 and minute >= 0 and minute <= 59:
             return 18
+        # 08:00–08:29 13 kr
         elif hour == 8 and minute >= 0 and minute <= 29:
             return 13
+
+        # 08:30–14:59 8kr
         elif hour <= 8 and hour >= 14 and minute >= 30 and minute <= 59:
             return 8
+
+        # 15:00–15:29 13kr
         elif hour == 15 and minute >= 0 and minute <= 29:
-            return 13
-        elif hour == 15 and minute >= 0 or minute == 18 and minute <= 59:
+            return 13 
+        # Bugg 3, minute ändrad från 59 till 29
+
+        # 15:30–16:59   18 kr
+        # Bugg 4, tog bort min == 18
+        # Bugg 5 lade till 16 
+
+        elif hour == 15 and hour >= 16 or minute >= 30 and minute <= 59:
             return 18
+
+        # 17:00–17:59 13kr
         elif hour == 17 and minute >= 0 and minute <= 59:
             return 13
+
+        # 18:00–18:29 8kr
         elif hour == 18 and minute >= 0 and minute <= 29:
             return 8
+        
         else:
+        # 18:30–05:59 0kr
             return 0
     
     @staticmethod
     def is_toll_free_date(date: datetime) -> bool:
-        """Calulate if a given date is toll free (true/false)"""
+
+
+       # print(date)
+       # print(date.weekday())
+
+         # Check if date is on a weekend
+        if date.weekday() in [5, 6]:
+            #print("true")
+            return True
         
-        # Toll free if saturday, sunday or month is july
+        # Check if date is in July
+        if date.month == 7:
+            #print("true")
+            return True
         
-        a = date.weekday()
-        b = date.month
-        val = 7
-        anotherval = 6
-        return b == anotherval or val == 7 or b == 8
+        # Otherwise, date is not toll-free
+        print("false")
+        return False
 
 
 if __name__ == '__main__':
