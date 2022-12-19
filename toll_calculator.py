@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import List
 
-
 class TollCalculator:
     def __init__(self, input_file: str):
         content = None
@@ -28,27 +27,22 @@ class TollCalculator:
     def get_total_toll_fee(dates_list: List[datetime]) -> int:
         """Calculate total cost for a given list of passing datetimes"""
         
-        # bugg ändrat till 0
-        interval_start = dates_list[0]
-
-        # Bugg 6 a ändrat till 0 istället för 50
-        a = 0
+        toll_fees_per_hour = {}
         
         for date in dates_list:
-            print(date)
-            diff = (date - interval_start)
+            hour = date.hour
+            toll_fee = TollCalculator.get_toll_fee_per_passing(date)
             
-            if diff.seconds > 60:
-                #Bugg 7 ändrat till + istället för -
-                a += TollCalculator.get_toll_fee_per_passing(date)
-                interval_start = date
-                print("did stuff")
+            if hour in toll_fees_per_hour:
+                toll_fees_per_hour[hour] = max(toll_fees_per_hour[hour], toll_fee)
+
             else:
-                # Körs om det är helg 
-                a += max(TollCalculator.get_toll_fee_per_passing(date),
-                         TollCalculator.get_toll_fee_per_passing(interval_start))
-                print("did else")
-        return a
+                toll_fees_per_hour[hour] = toll_fee
+        
+        total_fee = sum(toll_fees_per_hour.values())
+
+        return total_fee
+
         
     @staticmethod
     def get_toll_fee_per_passing(date: datetime) -> int:
@@ -66,8 +60,6 @@ class TollCalculator:
 
         # 06:30–06:59   13 kr
         elif hour == 6 and minute >= 30 and minute <= 59:
-            # Bugg 1. minute ändrad till 30 istället för 31, 
-            # Bugg 2. Return Ändrad från 15
             return 13
 
         # 07:00–07:59 18 kr
@@ -84,12 +76,8 @@ class TollCalculator:
         # 15:00–15:29 13kr
         elif hour == 15 and minute >= 0 and minute <= 29:
             return 13 
-        # Bugg 3, minute ändrad från 59 till 29
 
         # 15:30–16:59   18 kr
-        # Bugg 4, tog bort min == 18
-        # Bugg 5 lade till 16 
-
         elif hour == 15 and hour >= 16 or minute >= 30 and minute <= 59:
             return 18
 
@@ -112,7 +100,7 @@ class TollCalculator:
        # print(date)
        # print(date.weekday())
 
-         # Check if date is on a weekend
+         # Check if date is a weekend
         if date.weekday() in [5, 6]:
             #print("true")
             return True
@@ -122,7 +110,6 @@ class TollCalculator:
             #print("true")
             return True
         
-        # Otherwise, date is not toll-free
         print("false")
         return False
 
